@@ -1,0 +1,28 @@
+STEPS	     	  TASKS 			   PURPOSE						   INSTRUCTIONS
+================================================================================================================================================
+1. 	Install Influxdb (DB)		to store data in time-series 		instuctions are in 'influxdb' folder (for more check 'help' folder)
+------------------------------------------------------------------------------------------------------------------------------------------------
+2. 	Install Grafana-Server		to visualize the data from DB		instuctions are in 'grafana' folder (for more check 'help' folder)
+------------------------------------------------------------------------------------------------------------------------------------------------
+3. 	Install 'Python 2'		to deploy CoAP server & client	sudo apt update 
+					which was built based on python2  	sudo apt install python python-pip -y
+------------------------------------------------------------------------------------------------------------------------------------------------
+4. 	Create virtual environment	to install requirements for 		activate virtual environment (instuctions are in 
+	for python 2 			both the server and the client  	'create_activate_deactivate_venv.txt' file)
+------------------------------------------------------------------------------------------------------------------------------------------------
+5. 	Install server requirements	to run CoAP server			make sure that python virtual environment is still activate (done 
+										in STEP 4). Change working directory to 'server' and then run 
+										'pip install requirements_server.txt' command in terminal. Run the
+										server with 'python server.py' command. 
+------------------------------------------------------------------------------------------------------------------------------------------------										
+6. 	Install client requirements	to run CoAP client			make sure that python virtual environment is still activate (done 
+										in STEP 4). Change working directory to 'client' and then run 
+										'pip install requirements_client.txt' command in terminal. Run the
+										server with 'python client.py' command. 
+------------------------------------------------------------------------------------------------------------------------------------------------
+7. 	Collect data from influxdb	data visualization			make sure that 'influxdb' and 'grafana' are still running in your PC. 
+	and visualize in grafana						Normally influxdb runs on port '8086' whereas grafana runs on port  
+										'3000'. Run 'netstat -ptuln' to check whether the services are  
+										available or not (have a look at services_running_in_a_machine.png). 
+										Rest of the instructions are available in help folder in grafana. 
+------------------------------------------------------------------------------------------------------------------------------------------------

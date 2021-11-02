@@ -1,0 +1,20 @@
+#install => python2 
+# [auto included in python3 as a venv module, 
+# so no need to install it in python3]
+pip install virtualenv 
+
+
+# create virtual environment
+# in python2
+virtualenv -p 2 [name]
+# in python3
+python3 -m venv [name]
+
+
+# activate
+source [name]/bin/activate
+
+
+# deactive
+deactive
+

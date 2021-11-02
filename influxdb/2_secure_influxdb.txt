@@ -1,0 +1,16 @@
+# secure influxdb
+# ---------------
+# ref: https://docs.influxdata.com/influxdb/v1.8/administration/config/#http-endpoints-settings
+#      https://docs.influxdata.com/influxdb/v1.8/administration/authentication_and_authorization/#set-up-authentication
+
+
+# step 1: Create an admin (look at create_user_db.txt).
+# ref: https://docs.influxdata.com/influxdb/v1.8/administration/authentication_and_authorization/#user-management-commands
+CREATE USER <username> WITH PASSWORD '<password>' WITH ALL PRIVILEGES
+
+# step 2: Enable authentication by setting the 'auth-enabled = true' (in the [http] section) in influxdb.conf file. 
+# ref: https://docs.influxdata.com/influxdb/v1.8/administration/authentication_and_authorization/#set-up-authentication
+
+# step 3: Restart InfluxDB.
+sudo service influxdb restart
+
