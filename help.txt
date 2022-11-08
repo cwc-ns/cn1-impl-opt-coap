@@ -4,7 +4,7 @@ STEPS	     	  TASKS 			   PURPOSE						   INSTRUCTIONS
 ------------------------------------------------------------------------------------------------------------------------------------------------
 2. 	Install Grafana-Server		to visualize the data from DB		instuctions are in 'grafana' folder (for more check 'help' folder)
 ------------------------------------------------------------------------------------------------------------------------------------------------
-3. 	Install 'Python 2'		to deploy CoAP server & client	sudo apt update 
+3. 	Install 'Python 2'		to deploy CoAP server & client	        sudo apt update 
 					which was built based on python2  	sudo apt install python python-pip -y
 ------------------------------------------------------------------------------------------------------------------------------------------------
 4. 	Create virtual environment	to install requirements for 		activate virtual environment (instuctions are in 
