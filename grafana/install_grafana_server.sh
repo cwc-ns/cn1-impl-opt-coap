@@ -15,5 +15,5 @@ sudo systemctl enable grafana-server
 sudo systemctl start grafana-server
 
 
-service grafana-server status
+#service grafana-server status
 
