@@ -13,3 +13,4 @@ sudo systemctl unmask influxdb
 sudo systemctl enable influxdb
 sudo systemctl start influxdb
 
+#service influxdb status
