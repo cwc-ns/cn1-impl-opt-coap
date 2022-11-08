@@ -3,7 +3,7 @@
 # install influxdb-server
 # ref: https://pimylifeup.com/raspberry-pi-influxdb/
 
-wget -qO- https://repos.influxdata.com/influxdb.key | apt-key add -
+wget -qO- https://repos.influxdata.com/influxdb.key | sudo apt-key add -
 
 echo "deb https://repos.influxdata.com/ubuntu $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/influxdb.list
 
