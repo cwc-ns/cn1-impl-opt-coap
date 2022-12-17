@@ -35,12 +35,12 @@ SHOW MEASUREMENTS
 # insert into 'temperature' measurement where 'place' is a tag or an index 
 # with a value  (2 columns).
 # time will be inserted automatically (as an extra field) since influxdb is a time-series database.
-INSERT temperature,place=room1 vlaue=25.5
+INSERT temperature,place=room1 value=25.5
 
 # insert into 'humidity' measurement where 'place' is a tag or an index 
 # with a value  (2 columns). 
 # time will be inserted automatically (as an extra field) since influxdb is a time-series database.
-INSERT humidity,place=room1 vlaue=37.5
+INSERT humidity,place=room1 value=37.5
 
 
 # show measurement
