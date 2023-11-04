@@ -88,7 +88,7 @@ def send_influxdb(data, measurement='temperature'):
     if measurement == 'temperature' or measurement == 'humidity':
         # json body for temperature
         tags        = { "place": ROOM1 }
-        fields      = { "value" :  data}
+        fields      = { "value" : data }
         
         # save @influxdb
         save(db_client, measurement, fields, tags=tags)

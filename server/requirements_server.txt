@@ -1,3 +1,0 @@
-influxdb==5.3.0
-service_identity==18.1.0
-twisted==20.3.0

@@ -15,7 +15,7 @@ from twisted.internet import reactor
 import txthings.coap as coap
 import txthings.resource as resource
 
-from resources import CoreResource, TimeResource, DHTResource, DynamicURLResource
+from resources import CoreResource, TimeResource, DynamicURLResource
 
 def main():
     

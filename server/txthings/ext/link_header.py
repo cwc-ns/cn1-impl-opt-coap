@@ -94,4 +94,4 @@ def parse_link_value(instr):
 if __name__ == '__main__':
 	import sys
 	if len(sys.argv) > 1:
-		print parse_link_value(sys.argv[1])
+		print(parse_link_value(sys.argv[1]))

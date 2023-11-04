@@ -77,7 +77,7 @@ class DHTClient:
             # now, pick a value with 1 decimal point in between 25.00 and 35.00 which can be treated as 
             # temperature data that is reading from a DHT22 sensor
             temperature = round(random.uniform(25.00, 35.00), 1)
-            print "sending ... temperature # ", temperature	
+            print("sending ... temperature # ", temperature)
             
             # URI for "coap://<host>:<port>/sensors/dht/temperature"
             #uri      = (b'sensors/dht/temperature')
@@ -98,7 +98,7 @@ class DHTClient:
             # now, pick a value with 1 decimal point in between 35.00 and 45.00 which can be treated as 
             # humidity data that is reading from a DHT22 sensor
             humidity = round(random.uniform(35.00, 45.00), 1)	
-            print "sending ... humidity    # ", humidity
+            print("sending ... humidity    # ", humidity)
             
             # URI for "coap://<host>:<port>/sensors/dht/humidity"
             uri      = (b'sensors', b'dht', b'humidity', )
@@ -111,12 +111,12 @@ class DHTClient:
             self.next = "temperature"
             self.sleepRequired = True
         
-        print "-------------------- CoAP  Request -------------------"
-        print "host    :", self.host
-        print "port    :", self.port
-        print "URI     :", self.uri
-        print "payload :", self.payload 
-        print "------------------------ ends ------------------------"
+        print("-------------------- CoAP  Request -------------------")
+        print("host    :", self.host)
+        print("port    :", self.port)
+        print("URI     :", self.uri)
+        print("payload :", self.payload)
+        print("------------------------ ends ------------------------")
         
         request = coap.Message(code=coap.POST, payload=self.payload)        
         request.opt.uri_path = self.uri        
@@ -126,7 +126,13 @@ class DHTClient:
         # ipaddress.AddressValueError: '192.168.1.128' does not appear 
         # to be an IPv4 or IPv6 address. Did you pass in a bytes (str in Python 2) instead of a unicode object?
         #request.remote = (ip_address(self.host), self.port)
-        request.remote = (ip_address(unicode(self.host)), self.port)
+        
+        if sys.version_info.major == 2:
+            # -- python 2
+            request.remote = (ip_address(unicode(self.host)), self.port)
+        else:
+            # -- python 3
+            request.remote = (ip_address(self.host), self.port)
         
         d = self.protocol.request(request, observeCallback=self.printLaterResponse)
         d.addCallback(self.printResponse)
@@ -134,12 +140,21 @@ class DHTClient:
 
     def printResponse(self, response):
         log.msg('response found. reading...')
-        print "------------------- CoAP Response --------------------"   
-        host, port = response.remote     
-        print "host     : ", host
-        print "port     : ", port
-        print "payload  : ", str(response.payload)
-        print "------------------------ ends ------------------------"
+        host, port = response.remote
+        
+        print("------------------- CoAP Response --------------------")
+        print("host     : ", host)
+        print("port     : ", port)
+        
+        if sys.version_info.major == 2:
+            # -- python 2
+            payload = response.payload
+        else:
+            # -- python 3
+            payload = response.payload.decode()
+            
+        print("payload  : ", str(payload))
+        print("------------------------ ends ------------------------")
         # reactor.stop()        
         
         if self.sleepRequired:

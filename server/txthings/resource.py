@@ -7,6 +7,7 @@ Implementation of the lowest-level Resource class.
 """
 
 import copy
+import sys
 
 from zope.interface import implementer
 
@@ -125,6 +126,12 @@ class CoAPResource:
         This will check to see if I have a pre-registered child resource of the
         given name, and call getChild if I do not.
         """
+        # ---------------------------- added by johirul ---------------------------- #
+        if sys.version_info.major > 2:
+            # -- python 3
+            path = path.decode()
+        # ----------------------------x----------------x---------------------------- #
+
         if path in self.children:
             return self.children[path]
         return self.getChild(path, request)
@@ -185,8 +192,8 @@ class CoAPResource:
 
     def generateResourceList(self, data, path=""):
         params = self.encode_params() + (";obs" if self.observable else "")
-        if self.visible is True:
-            if path is "":
+        if self.visible == True:
+            if path == "":
                 data.append('</>' + params)
             else:
                 data.append('<' + path + '>' + params)

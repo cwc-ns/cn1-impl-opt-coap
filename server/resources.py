@@ -85,15 +85,15 @@ class DHTResource(resource.CoAPResource):
     def render_POST(self, request):
         # dynamic URL part from --> coap://<host>:<port>/sensors/dht/<temperature/humidity>
         dynamicURL = self.dynamicURL 
-        data = float(request.payload)
-          
-        print "-------------------- CoAP  Request -------------------"    
+        data = float(request.payload)   
         host, port = request.remote
-        print "host    : ", host
-        print "port    : ", port     
-        print "URI     : ", request.prepath
-        print "payload : ", data        
-        print "------------------------ ends ------------------------"
+          
+        print("-------------------- CoAP  Request -------------------") 
+        print("host    : ", host)
+        print("port    : ", port)     
+        print("URI     : ", request.prepath)
+        print("payload : ", data)        
+        print("------------------------ ends ------------------------")
         
         '''if self.dynamicURL == 'temperature':
             send_influxdb(data, 'temperature')
@@ -106,10 +106,10 @@ class DHTResource(resource.CoAPResource):
         
         if dynamicURL == 'temperature' or dynamicURL == 'humidity':
             send_influxdb(data, dynamicURL)
-            print "Saving ", data, " to ", dynamicURL
+            print("Saving ", data, " to ", dynamicURL)
             payload = "%s=%s saved successfully!" % (dynamicURL.title(), data)
         else:
-            print "Unknown Resource with ", data
+            print("Unknown Resource with ", data)
         
         defer_obj = defer.Deferred()
         reactor.callLater(0, self.responseReady, defer_obj, request, payload)
@@ -117,12 +117,13 @@ class DHTResource(resource.CoAPResource):
         
     def responseReady(self, d, request, payload):
         log.msg('response ready. sending...')
-        print "------------------- CoAP Response --------------------" 
-        host, port = request.remote
-        print "host    : ", host
-        print "port    : ", port
-        print "payload : ", payload
-        print "------------------------ ends ------------------------"
+        host, port = request.remote            
+        print("------------------- CoAP Response --------------------") 
+        print("host    : ", host)
+        print("port    : ", port)
+        print("payload : ", payload)
+        print("------------------------ ends ------------------------")
+        
         response = coap.Message(code=coap.CONTENT, payload=payload)
         d.callback(response)
 
@@ -133,8 +134,8 @@ class DynamicURLResource(resource.CoAPResource):
     """
         
     def getChild(self, path, request):
-        # print "----------------", request.prepath
-        # print "----------------", path
+        # print("----------------", request.prepath)
+        # print("----------------", path)
         return DHTResource(path)
 # /--------------------------------------------------------------------- #
 

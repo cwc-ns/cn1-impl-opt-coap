@@ -283,7 +283,7 @@ class Message(object):
         self.prepath = None
         self.postpath = None
 
-        if self.payload is None:
+        if self.payload == None:
             raise TypeError("Payload must not be None. Use empty string instead.")
 
     @classmethod
@@ -291,7 +291,7 @@ class Message(object):
         """Create Message object from binary representation of message."""
         (vttkl, code, mid) = struct.unpack('!BBH', rawdata[:4])
         version = (vttkl & 0xC0) >> 6
-        if version is not 1:
+        if version != 1:
             raise ValueError("Fatal Error: Protocol Version must be 1")
         mtype = (vttkl & 0x30) >> 4
         token_length = (vttkl & 0x0F)
@@ -304,7 +304,7 @@ class Message(object):
 
     def encode(self):
         """Create binary representation of message from Message object."""
-        if self.mtype is None or self.mid is None:
+        if self.mtype == None or self.mid == None:
             raise TypeError("Fatal Error: Message Type and Message ID must not be None.")
         rawdata = six.int2byte((self.version << 6) + ((self.mtype & 0x03) << 4) + (len(self.token) & 0x0F))
         rawdata += struct.pack('!BH', self.code, self.mid)
@@ -312,7 +312,16 @@ class Message(object):
         rawdata += self.opt.encode()
         if len(self.payload) > 0:
             rawdata += six.int2byte(0xFF)
-            rawdata += self.payload
+            
+            # ---------------------------- added by johirul ---------------------------- #
+            if sys.version_info.major == 2:
+                # -- python 2
+                rawdata += self.payload 
+            else:
+                # -- python 3
+                rawdata += self.payload.encode()
+            # ----------------------------x----------------x---------------------------- #
+            
         return rawdata
 
     def extractBlock(self, number, size_exp):
@@ -475,7 +484,7 @@ class Options(object):
         """Convenience getter: Uri-Path option"""
         segment_list = []
         uri_path = self.getOption(number=URI_PATH)
-        if uri_path is not None:
+        if uri_path != None:
             for segment in uri_path:
                 segment_list.append(segment.value)
         return segment_list
@@ -494,7 +503,7 @@ class Options(object):
         """Convenience getter: Uri-Query option"""
         segment_list = []
         uri_query = self.getOption(number=URI_QUERY)
-        if uri_query is not None:
+        if uri_query != None:
             for segment in uri_query:
                 segment_list.append(segment.value)
         return segment_list
@@ -509,7 +518,7 @@ class Options(object):
     def _getBlock2(self):
         """Convenience getter: Block2 option"""
         block2 = self.getOption(number=BLOCK2)
-        if block2 is not None:
+        if block2 != None:
             return block2[0].value
         else:
             return None
@@ -524,7 +533,7 @@ class Options(object):
     def _getBlock1(self):
         """Convenience getter: Block1 option"""
         block1 = self.getOption(number=BLOCK1)
-        if block1 is not None:
+        if block1 != None:
             return block1[0].value
         else:
             return None
@@ -561,7 +570,7 @@ class Options(object):
     def _getContentFormat(self):
         """Convenience getter: Content-Format option"""
         content_format = self.getOption(number=CONTENT_FORMAT)
-        if content_format is not None:
+        if content_format != None:
             return content_format[0].value
         else:
             return None
@@ -571,13 +580,13 @@ class Options(object):
     def _setETag(self, etag):
         """Convenience setter: ETag option"""
         self.deleteOption(number=ETAG)
-        if etag is not None:
+        if etag != None:
             self.addOption(OpaqueOption(number=ETAG, value=etag))
 
     def _getETag(self):
         """Convenience getter: ETag option"""
         etag = self.getOption(number=ETAG)
-        if etag is not None:
+        if etag != None:
             return etag[0].value
         else:
             return None
@@ -591,18 +600,18 @@ class Options(object):
 
     def _getETags(self):
         etag = self.getOption(number=ETAG)
-        return [] if etag is None else [tag.value for tag in etag]
+        return [] if etag == None else [tag.value for tag in etag]
 
     etags = property(_getETags, _setETags, None, "Access to a list of ETags on the message (as used in requests)")
 
     def _setObserve(self, observe):
         self.deleteOption(number=OBSERVE)
-        if observe is not None:
+        if observe != None:
             self.addOption(UintOption(number=OBSERVE, value=observe))
 
     def _getObserve(self):
         observe = self.getOption(number=OBSERVE)
-        if observe is not None:
+        if observe != None:
             return observe[0].value
         else:
             return None
@@ -611,12 +620,12 @@ class Options(object):
 
     def _setAccept(self, accept):
         self.deleteOption(number=ACCEPT)
-        if accept is not None:
+        if accept != None:
             self.addOption(UintOption(number=ACCEPT, value=accept))
 
     def _getAccept(self):
         accept = self.getOption(number=ACCEPT)
-        if accept is not None:
+        if accept != None:
             return accept[0].value
         else:
             return None
@@ -635,7 +644,7 @@ class Options(object):
         """Convenience getter: Location-Path option"""
         segment_list = []
         location_path = self.getOption(number=LOCATION_PATH)
-        if location_path is not None:
+        if location_path != None:
             for segment in location_path:
                 segment_list.append(segment.value)
         return segment_list
@@ -643,7 +652,7 @@ class Options(object):
     location_path = property(_getLocationPath, _setLocationPath)
 
 def readExtendedFieldValue(value, rawdata):
-    """Used to decode large values of option delta and option length
+    """Used to decode large values of option delta && option length
        from raw binary form."""
     if value >= 0 and value < 13:
         return (value, rawdata)
@@ -812,14 +821,23 @@ class Coap(protocol.DatagramProtocol):
     def datagramReceived(self, data, remote):
         host, port = remote
         log.msg("Received %r from %s:%d" % (data, host, port))
-        message = Message.decode(data, (ip_address(unicode(host)), port), self)
-        if self.deduplicateMessage(message) is True:
+        
+        # ---------------------------- added by johirul ---------------------------- #
+        if sys.version_info.major == 2:
+            # -- python 2
+            message = Message.decode(data, (ip_address(unicode(host)), port), self) 
+        else:
+            # -- python 3
+            message = Message.decode(data, (ip_address(host), port), self)
+        # ----------------------------x----------------x---------------------------- #
+        
+        if self.deduplicateMessage(message) == True:
             return
         if isRequest(message.code):
             self.processRequest(message)
         elif isResponse(message.code):
             self.processResponse(message)
-        elif message.code is EMPTY:
+        elif message.code == EMPTY:
             self.processEmpty(message)
 
     def deduplicateMessage(self, message):
@@ -840,7 +858,7 @@ class Coap(protocol.DatagramProtocol):
         log.msg("Incoming Message ID: %d" % message.mid)
         if message.mtype in (CON, NON):
             if key in self.recent_remote_ids:
-                if message.mtype is CON:
+                if message.mtype == CON:
                     if len(self.recent_remote_ids[key]) == 3:
                         log.msg('Duplicate CON received, sending old response again')
                         self.sendMessage(self.recent_remote_ids[key][2])
@@ -872,14 +890,14 @@ class Coap(protocol.DatagramProtocol):
             self.sendMessage(rst)
         
         def ackIfConfirmable():
-            if response.mtype is CON:
+            if response.mtype == CON:
                 ack = Message(mtype=ACK, mid=response.mid, code=EMPTY, payload="")
                 ack.remote = response.remote
                 self.sendMessage(ack)
 
-        if response.mtype is RST:
+        if response.mtype == RST:
             return
-        if response.mtype is ACK:
+        if response.mtype == ACK:
             if response.mid in self.active_exchanges:
                 self.removeExchange(response)
             else:
@@ -897,12 +915,12 @@ class Coap(protocol.DatagramProtocol):
             kw = kw or {}
 
             block2 = response.opt.block2
-            if block2 is None:
+            if block2 == None:
                 ackIfConfirmable()
                 callback(response, *args, **kw)
             elif block2.block_number == 0:
                 ackIfConfirmable()
-                if block2.more is False:
+                if block2.more == False:
                     callback(response, *args, **kw)
                 else:
                     request = Message(code=GET)
@@ -919,7 +937,7 @@ class Coap(protocol.DatagramProtocol):
             else:
                 resetUnrecognized()
 
-            if response.opt.observe is None:
+            if response.opt.observe == None:
                 del self.observations[(response.token, response.remote)]
         else:
             resetUnrecognized()
@@ -938,7 +956,7 @@ class Coap(protocol.DatagramProtocol):
             responder = Responder(self, request)
 
     def processEmpty(self, message):
-        if message.mtype is CON:
+        if message.mtype == CON:
             log.msg('Empty CON message received (CoAP Ping) - replying with RST.')
             rst = Message(mtype=RST, mid=message.mid, code=EMPTY, payload='')
             rst.remote = message.remote
@@ -960,11 +978,11 @@ class Coap(protocol.DatagramProtocol):
             if len(self.recent_remote_ids[recent_key]) != 3:
                 self.recent_remote_ids[recent_key] = self.recent_remote_ids[recent_key] + (message,)
 
-        if message.mid is None:
+        if message.mid == None:
             message.mid = self.nextMessageID()
         msg = message.encode()
         self.transport.write(msg, target)
-        if message.mtype is CON:
+        if message.mtype == CON:
             self.addExchange(message)
         log.msg("Message %r sent successfully" % msg)
 
@@ -1047,7 +1065,7 @@ class Requester(object):
         self.cbs = ((observeCallback, observeCallbackArgs, observeCallbackKeywords),
                     (block1Callback, block1CallbackArgs, block1CallbackKeywords),
                     (block2Callback, block2CallbackArgs, block2CallbackKeywords))
-        if isRequest(self.app_request.code) is False:
+        if isRequest(self.app_request.code) == False:
             raise ValueError("Message code is not valid for request")
         size_exp = DEFAULT_BLOCK_SIZE_EXP
         if len(self.app_request.payload) > (2 ** (size_exp + 4)):
@@ -1055,7 +1073,7 @@ class Requester(object):
             self.app_request.opt.block1 = request.opt.block1
         else:
             request = self.app_request
-        if request is None:
+        if request == None:
             return defer.fail()
         self.deferred = self.sendRequest(request)
         self.deferred.addCallback(self.processBlock1InResponse)
@@ -1088,7 +1106,7 @@ class Requester(object):
                 timeout.cancel()
             return result
 
-        if request.mtype is None:
+        if request.mtype == None:
             request.mtype = CON
         request.token = self.protocol.nextToken()
         try:
@@ -1101,7 +1119,7 @@ class Requester(object):
             d.addBoth(gotResult)
             self.protocol.outgoing_requests[(request.token, request.remote)] = self
             log.msg("Sending request - Token: %s, Host: %s, Port: %s" % (codecs.encode(request.token, 'hex'), str(request.remote[0]), request.remote[1]))
-            if request.opt.observe is not None and self.cbs[0][0] is not None:
+            if request.opt.observe != None and self.cbs[0][0] != None:
                 d.addCallback(self.registerObservation, self.cbs[0], request.opt.uri_path)
             return d
 
@@ -1110,7 +1128,7 @@ class Requester(object):
         d.callback(response)
 
     def registerObservation(self, response, callback, request_uri_path):
-        if response.opt.observe is not None:
+        if response.opt.observe != None:
             self.protocol.observations[(response.token, response.remote)] = (callback, request_uri_path)
         return response
 
@@ -1123,7 +1141,7 @@ class Requester(object):
            Method is recursive - calls itself until all request blocks
            are sent."""
 
-        if response.opt.block1 is not None:
+        if response.opt.block1 != None:
             block1 = response.opt.block1
             log.msg("Response with Block1 option received, number = %d, more = %d, size_exp = %d." % (block1.block_number, block1.more, block1.size_exponent))
             if block1.block_number == self.app_request.opt.block1.block_number:
@@ -1132,14 +1150,14 @@ class Requester(object):
                     next_block = self.app_request.extractBlock(next_number, block1.size_exponent)
                 else:
                     next_block = self.app_request.extractBlock(self.app_request.opt.block1.block_number + 1, block1.size_exponent)
-                if next_block is not None:
-                    if block1.more is False:
+                if next_block != None:
+                    if block1.more == False:
                         if response.code not in (CREATED, DELETED, VALID, CHANGED, CONTENT, CONTINUE):
                             log.msg("Client returned non 2.xx response to intermediate block, code = %d." % (response.code))
                             return defer.fail()
                     self.app_request.opt.block1 = next_block.opt.block1
                     block1Callback, args, kw = self.cbs[1]
-                    if block1Callback is None:
+                    if block1Callback == None:
                         return self.sendNextRequestBlock(None, next_block)
                     else:
                         args = args or ()
@@ -1148,14 +1166,14 @@ class Requester(object):
                         d.addCallback(self.sendNextRequestBlock, next_block)
                         return d
                 else:
-                    if block1.more is False:
+                    if block1.more == False:
                         return defer.succeed(response)
                     else:
                         return defer.fail()
             else:
                 return defer.fail()
         else:
-            if self.app_request.opt.block1 is None:
+            if self.app_request.opt.block1 == None:
                 return defer.succeed(response)
             else:
                 return defer.fail()
@@ -1175,25 +1193,25 @@ class Requester(object):
 
            Method is recursive - calls itself until all response blocks
            from server are received."""
-        if response.opt.block2 is not None:
+        if response.opt.block2 != None:
             block2 = response.opt.block2
             log.msg("Response with Block2 option received, number = %d, more = %d, size_exp = %d." % (block2.block_number, block2.more, block2.size_exponent))
-            if self.assembled_response is not None:
+            if self.assembled_response != None:
                 try:
                     self.assembled_response.appendResponseBlock(response)
                 except error.Error as e:
                     return defer.fail(e)
             else:
-                if block2.block_number is 0:
+                if block2.block_number == 0:
                     log.msg("Receiving blockwise response")
                     self.assembled_response = response
                 else:
                     log.msg("ProcessBlock2 error: transfer started with nonzero block number.")
                     return defer.fail()
-            if block2.more is True:
+            if block2.more == True:
                 request = self.app_request.generateNextBlock2Request(response)
                 block2Callback, args, kw = self.cbs[2]
-                if block2Callback is None:
+                if block2Callback == None:
                     return self.askForNextResponseBlock(None, request)
                 else:
                     args = args or ()
@@ -1204,7 +1222,7 @@ class Requester(object):
             else:
                 return defer.succeed(self.assembled_response)
         else:
-            if self.assembled_response is None:
+            if self.assembled_response == None:
                 return defer.succeed(response)
             else:
                 return defer.fail(error.MissingBlock2Option)
@@ -1242,7 +1260,7 @@ class Responder(object):
 
            Method is recursive - calls itself until all request blocks
            are received."""
-        if request.opt.block1 is not None:
+        if request.opt.block1 != None:
             block1 = request.opt.block1
             log.msg("Request with Block1 option received, number = %d, more = %d, size_exp = %d." % (block1.block_number, block1.more, block1.size_exponent))
             if block1.block_number == 0:
@@ -1257,7 +1275,7 @@ class Responder(object):
                     self.respondWithError(request, NOT_IMPLEMENTED, b"Error: Request block received out of order!")
                     return defer.fail(error.NotImplemented())
                     #raise error.NotImplemented
-            if block1.more is True:
+            if block1.more == True:
                 #TODO: SUCCES_CODE Code should be either Changed or Created - Resource check needed
                 #TODO: SIZE_CHECK1 should check if the size of incoming payload is still acceptable
                 #TODO: SIZE_CHECK2 should check if Size option is present, and reject the resource if size too large
@@ -1266,7 +1284,7 @@ class Responder(object):
                 log.msg("Complete blockwise request received.")
                 return defer.succeed(self.assembled_request)
         else:
-            if self.assembled_request is not None:
+            if self.assembled_request != None:
                 log.msg("Non-blockwise request received during blockwise transfer. Blockwise transfer cancelled.")
             return defer.succeed(request)
 
@@ -1296,7 +1314,7 @@ class Responder(object):
             self.respondWithError(request, METHOD_NOT_ALLOWED, b"Error: Method not recognized!")
         else:
             delayed_ack = reactor.callLater(EMPTY_ACK_DELAY, self.sendEmptyAck, request)
-            if resource.observable and request.code == GET and request.opt.observe is not None:
+            if resource.observable and request.code == GET and request.opt.observe != None:
                 d.addCallback(self.handleObserve, request, resource)
             d.addCallback(self.respond, request, delayed_ack)
             return d
@@ -1347,11 +1365,11 @@ class Responder(object):
            for sending."""
 
         log.msg("Preparing response...")
-        if delayed_ack is not None:
-            if delayed_ack.active() is True:
+        if delayed_ack != None:
+            if delayed_ack.active() == True:
                 delayed_ack.cancel()
         self.app_response = app_response
-        size_exp = min(request.opt.block2.size_exponent if request.opt.block2 is not None else DEFAULT_BLOCK_SIZE_EXP, DEFAULT_BLOCK_SIZE_EXP)
+        size_exp = min(request.opt.block2.size_exponent if request.opt.block2 != None else DEFAULT_BLOCK_SIZE_EXP, DEFAULT_BLOCK_SIZE_EXP)
         if len(self.app_response.payload) > (2 ** (size_exp + 4)):
             response = self.app_response.extractBlock(0, size_exp)
             self.app_response.opt.block2 = response.opt.block2
@@ -1359,7 +1377,7 @@ class Responder(object):
         else:
             self.sendResponse(app_response, request)
             return defer.succeed(None)
-        if response is None:
+        if response == None:
             return defer.fail()
 
     def processBlock2InRequest(self, request):
@@ -1367,17 +1385,17 @@ class Responder(object):
 
            Method is recursive - calls itself until all response blocks
            are sent to client."""
-        if request.opt.block2 is not None:
+        if request.opt.block2 != None:
             block2 = request.opt.block2
             log.msg("Request with Block2 option received, number = %d, more = %d, size_exp = %d." % (block2.block_number, block2.more, block2.size_exponent))
             sent_length = (2 ** (self.app_response.opt.block2.size_exponent + 4)) * (self.app_response.opt.block2.block_number + 1)
             #TODO: compare block size of request and response - calculate new block_number if necessary
             if (2 ** (block2.size_exponent + 4)) * block2.block_number == sent_length:
                 next_block = self.app_response.extractBlock(block2.block_number, block2.size_exponent)
-                if next_block is None:
+                if next_block == None:
                     log.msg("Block out of range")
                     return defer.fail()
-                if next_block.opt.block2.more is True:
+                if next_block.opt.block2.more == True:
                     self.app_response.opt.block2 = next_block.opt.block2
                     return self.sendResponseBlock(next_block, request)
                 else:
@@ -1443,25 +1461,25 @@ class Responder(object):
            - sending blockwise (Block2) response block
            - sending any error response
         """
-        #if isResponse(response.code) is False:
+        #if isResponse(response.code) == False:
             #raise ValueError("Message code is not valid for a response.")
         response.token = request.token
         log.msg("Token: %s" % ":".join(("{:02x}".format(c) for c in six.iterbytes(response.token))))
         response.remote = request.remote
-        if request.opt.block1 is not None:
+        if request.opt.block1 != None:
             response.opt.block1 = request.opt.block1
-        if response.mtype is None:
-            if request.response_type is None:
-                if request.mtype is CON:
+        if response.mtype == None:
+            if request.response_type == None:
+                if request.mtype == CON:
                     response.mtype = ACK
                 else:
                     response.mtype = NON
-            elif request.response_type is ACK:
+            elif request.response_type == ACK:
                 response.mtype = CON
             else:
                 raise Exception()
         request.response_type = response.mtype
-        if response.mid is None:
+        if response.mid == None:
             if response.mtype in (ACK, RST):
                 response.mid = request.mid
         log.msg("Sending response, type = %s (request type = %s)" % (types[response.mtype], types[request.mtype]))

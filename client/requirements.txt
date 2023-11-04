@@ -1,0 +1,4 @@
+#Adafruit-Python-DHT==1.4.0
+ipaddress>=1.0.17
+twisted>=16.4.1
+
