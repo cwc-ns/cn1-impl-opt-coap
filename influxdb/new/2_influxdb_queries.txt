@@ -22,7 +22,7 @@ show databases
 SHOW DATABASES
 
 
-# use treatment
+# use database
 use dht
 USE dht
 
